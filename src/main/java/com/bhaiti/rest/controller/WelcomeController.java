@@ -42,7 +42,7 @@ public class WelcomeController {
 	
 	public String scannedId = null;
 	
-	public static final String ROOT_SHARE_PATH = "D:/pdfOutput/";
+	public static final String ROOT_SHARE_PATH = "I:/Production/";
 	
 	@RequestMapping(value = "/getpdf/{folderName}/{id}", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> getpdf(@PathVariable("id") String id, @PathVariable("folderName") String folderName) throws JSONException {
