@@ -92,7 +92,7 @@ public class WelcomeController {
 //		if (f.exists()) {
 		if(obj != null) {
 			
-			cvDetails.setFoNumber(obj.getString("Fo Number"));
+			cvDetails.setFoNumber(obj.getString("FoNumber"));
 			cvDetails.setCustomer(obj.getString("Customer"));
 			cvDetails.setIaNumber(obj.getString("IA"));
 			cvDetails.setSize(obj.getString("Size"));
