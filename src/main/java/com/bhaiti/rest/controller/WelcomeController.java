@@ -112,7 +112,7 @@ public class WelcomeController {
 	@RequestMapping(value = "/savepdf", method = RequestMethod.POST)
 	@ResponseBody
 	public String savepdf(@RequestBody UserInput userInput) throws DocumentException, FileNotFoundException {
-		
+		JSONObject obj = getIAInfo(userInput.getId());
 		Document document = new Document(PageSize.A4);
 		PdfWriter.getInstance(document, new FileOutputStream(ROOT_SHARE_PATH + "result/" + userInput.getId() + ".pdf"));
 
@@ -124,7 +124,7 @@ public class WelcomeController {
 		PdfPTable resultTable = new PdfPTable(1);
 		resultTable.setWidthPercentage(100f);
 
-		PdfPCell resultCell = new PdfPCell(createPdf.drawInfoTable());
+		PdfPCell resultCell = new PdfPCell(createPdf.drawInfoTable(obj));
 		resultCell.setBorder(0);
 		resultCell.setBorderWidthLeft(1f);
 		resultCell.setBorderWidthRight(1f);

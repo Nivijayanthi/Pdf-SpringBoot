@@ -7,6 +7,7 @@ import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
+import org.json.JSONObject;
 
 public class CreatePdf {
 
@@ -25,20 +26,20 @@ public class CreatePdf {
 		}
 
 		public static PdfPCell getSmallCell(String content) {
-			Font font = FontFactory.getFont(FontFactory.TIMES_ROMAN, 10, BaseColor.BLACK);
+			Font font = FontFactory.getFont(FontFactory.TIMES_ROMAN, 7, BaseColor.BLACK);
 			Chunk chunk = new Chunk(content, font);
 
 			PdfPCell cell = new PdfPCell();
 			cell.setBorderWidth(0.2f);
 			cell.setPaddingLeft(5);
 			cell.setPaddingTop(3f);
-			cell.setPaddingBottom(3f);
+			cell.setPaddingBottom(2f);
 			cell.setPhrase(new Phrase(chunk));
 			return cell;
 		}
 		
 		public static PdfPCell getemptyBorderCell(String content) {
-			Font font = FontFactory.getFont(FontFactory.TIMES_ROMAN, 10, BaseColor.BLACK);
+			Font font = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, BaseColor.BLACK);
 			Chunk chunk = new Chunk(content, font);
 
 			PdfPCell cell = new PdfPCell();
@@ -51,32 +52,32 @@ public class CreatePdf {
 		}
 
 		public static PdfPCell getVerySmallCell(String content) {
-			Font font = FontFactory.getFont(FontFactory.TIMES_ROMAN, 10, BaseColor.BLACK);
+			Font font = FontFactory.getFont(FontFactory.TIMES_ROMAN, 7, BaseColor.BLACK);
 			Chunk chunk = new Chunk(content, font);
 
 			PdfPCell cell = new PdfPCell();
 			cell.setBorderWidth(0.2f);
 			cell.setPaddingLeft(2);
 			cell.setPaddingTop(2f);
-			cell.setPaddingBottom(5f);
+			cell.setPaddingBottom(2f);
 			cell.setPhrase(new Phrase(chunk));
 			return cell;
 		}
 
 		public static PdfPCell getCell(String content) {
-			Font font = FontFactory.getFont(FontFactory.TIMES_ROMAN, 10, BaseColor.BLACK);
+			Font font = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, BaseColor.BLACK);
 			Chunk chunk = new Chunk(content, font);
 
 			PdfPCell cell = new PdfPCell();
 			cell.setBorderWidth(0.2f);
 			cell.setPaddingLeft(5);
-			cell.setPaddingTop(10f);
-			cell.setPaddingBottom(10f);
+			cell.setPaddingTop(5f);
+			cell.setPaddingBottom(5f);
 			cell.setPhrase(new Phrase(chunk));
 			return cell;
 		}
 
-		public static PdfPTable drawInfoTable() throws DocumentException {
+		public static PdfPTable drawInfoTable(JSONObject obj) throws DocumentException {
 			PdfPTable infoMainTable = new PdfPTable(1);
 			infoMainTable.setWidthPercentage(100f);
 
@@ -85,13 +86,13 @@ public class CreatePdf {
 
 
 			infoTable.addCell(getHeaderCell("FO Number/It No"));
-			infoTable.addCell(getCell(""));
+			infoTable.addCell(getCell(obj.getString("FoNumber")));
 
 			infoTable.addCell(getHeaderCell("Customer"));
-			infoTable.addCell(getCell("")); 
+			infoTable.addCell(getCell(obj.getString("Customer"))); 
 
 			infoTable.addCell(getHeaderCell("Size/Type"));
-			infoTable.addCell(getCell(""));
+			infoTable.addCell(getCell(obj.getString("Size")));
 
 			PdfPCell cell = new PdfPCell(infoTable);
 			cell.setBorderWidth(0);
@@ -107,7 +108,7 @@ public class CreatePdf {
 			descTable.addCell(getCell(" "));
 			descTable.addCell(getCell("Actuator Assy. "));
 			descTable.addCell(getCell(" "));
-			descTable.addCell(getCell("IA"));
+			descTable.addCell(getCell("IA"+obj.getString("IA")));
 
 			cell = new PdfPCell(descTable);
 			cell.setBorderWidth(0);
