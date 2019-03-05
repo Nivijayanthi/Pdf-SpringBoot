@@ -1,14 +1,18 @@
 package com.bhaiti.rest.controller;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,24 +52,13 @@ public class WelcomeController {
 
 		byte[] fileContent = new byte[40];
 		try {
-			java.nio.file.Path path = Paths.get(ROOT_SHARE_PATH + folderName + "/"+id );
-			File f = new File(ROOT_SHARE_PATH + folderName );
+			java.nio.file.Path path = Paths.get(ROOT_SHARE_PATH + folderName );
+			File f = new File(ROOT_SHARE_PATH + folderName  + "/"+ id + ".pdf" );
 			
-			if(f.isDirectory()) {
-				File[] dirContent = f.listFiles();
-				for(File file : dirContent) {
-					if(file.getName().endsWith(".pdf")) {
-						f = file;
-						break;
-					}
-				}
-			}
-			if (Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
-				System.out.println("Success");
-			} else {
-				System.out.println("Not Found");
-				response = new ResponseEntity<>(null, null, HttpStatus.NOT_FOUND);
-			}
+			if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+				f = new File(ROOT_SHARE_PATH + "default.pdf" );
+			} 
+			
 			fileContent = Files.readAllBytes(f.toPath());
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.parseMediaType("application/pdf"));
@@ -88,23 +81,17 @@ public class WelcomeController {
 	public CVDetails getById(@PathVariable("id") String id) {
 		 
 		CVDetails cvDetails = new CVDetails();
-		JSONObject jObject = new JSONObject();
-		HashMap<String, JSONObject> map = new HashMap<String, JSONObject>();
-		
 		scannedId = id;
+		JSONObject obj = getIAInfo(id);
 
-		jObject.put("Fo Number", id);
-		jObject.put("Customer", "Emerson");
-		jObject.put("Size", "100mm");
-		jObject.put("IA", "12345");
 
-		map.put(id, jObject);
+		
 //		File f = new File(ROOT_SHARE_PATH + scannedId);
 		
 		System.out.println("id......."+ id);
 //		if (f.exists()) {
-		if(map.containsKey(id)) {
-			JSONObject obj = map.get(id);
+		if(obj != null) {
+			
 			cvDetails.setFoNumber(obj.getString("Fo Number"));
 			cvDetails.setCustomer(obj.getString("Customer"));
 			cvDetails.setIaNumber(obj.getString("IA"));
@@ -122,8 +109,9 @@ public class WelcomeController {
 		return cvDetails;
 	}
 
-	@RequestMapping(value = "/savePdf", method = RequestMethod.POST)
-	public String savePDF(@RequestBody UserInput userInput) throws DocumentException, FileNotFoundException {
+	@RequestMapping(value = "/savepdf", method = RequestMethod.POST)
+	@ResponseBody
+	public String savepdf(@RequestBody UserInput userInput) throws DocumentException, FileNotFoundException {
 		
 		Document document = new Document(PageSize.A4);
 		PdfWriter.getInstance(document, new FileOutputStream(ROOT_SHARE_PATH + "result/" + userInput.getId() + ".pdf"));
@@ -204,6 +192,70 @@ public class WelcomeController {
 
 		document.close();
 		return null;
+		
+	}
+	
+	private JSONObject getIAInfo(String id) {
+		StringBuilder sb = new StringBuilder();
+		HttpURLConnection conn = null;
+		
+		JSONObject jObject = new JSONObject();
+		jObject.put("FoNumber", id);
+		jObject.put("Customer", "Ferabi");
+		jObject.put("Size", "4 EZ");
+		jObject.put("IA", "IA153428");
+		
+		try {
+			  
+				URL url = new URL("http://localhost:8080/emerson_sms/fetchFGInformation.html?iaNumber=IA"+id);
+				conn = (HttpURLConnection) url.openConnection();
+				conn.setDoOutput(true);
+				conn.setRequestMethod("GET");
+				
+				
+				BufferedReader br = new BufferedReader(new InputStreamReader(
+						(conn.getInputStream())));
+
+				String output;
+				
+				while ((output = br.readLine()) != null) {
+					sb.append(output);
+				}
+				
+				System.err.println("Server output is "+sb.toString());
+				
+				String response = sb.toString();
+				
+				String[] respMessages = response.split("::");
+				
+				for(String keyValue : respMessages) {
+					String[] keyValuePair = keyValue.split("=");
+					if("ianumber".equals(keyValuePair[0])) {
+						jObject.put("IA", "IA"+id);
+					} else if("OANum".equals(keyValuePair[0])) {
+						jObject.put("FoNumber", keyValuePair[1]);
+					} else if("matCode".equals(keyValuePair[0])) {
+						jObject.put("Size", keyValuePair[1]);
+					} 
+				
+				}
+				
+				jObject.put("Customer", "");
+				
+				
+			  } catch (MalformedURLException e) {
+
+				System.err.println(e);
+
+			  } catch (IOException e) {
+
+				System.err.println(e);
+
+			  } finally {
+				  if(conn != null) { try { conn.disconnect(); } catch(Exception e) {}}
+			  }
+			  
+		return jObject;
 		
 	}
 }
